@@ -91,7 +91,14 @@ async def obtener_usuario(usuario_id: UUID, db: Session = Depends(get_db)):
     # Construir respuesta con información de puesto
     usuario_dict = {
         "id": usuario.id,
-        "firebase_uid": usuario.firebase_uid,
+        "firebase_uid": usuario.firebase_uid,# Ver la URL actual (incorrecta)
+git remote -v
+
+# Cambiar a la URL correcta de tu repositorio
+git remote set-url origin https://github.com/veasv2/sgd-colca-backend.git
+
+# Verificar que se cambió correctamente
+git remote -v
         "email": usuario.email,
         "nombres": usuario.nombres,
         "apellidos": usuario.apellidos,
