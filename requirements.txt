@@ -1,0 +1,13 @@
+# SGD-COLCA BACKEND - DEPENDENCIAS ACTUALIZADAS
+fastapi
+uvicorn[standard]
+sqlalchemy
+alembic
+asyncpg
+databases[postgresql]
+pydantic[email]
+pydantic-settings
+python-dotenv
+python-multipart
+httpx
+email-validator
