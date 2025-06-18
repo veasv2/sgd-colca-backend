@@ -6,7 +6,9 @@ from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_
 
-from app.models.usuario import Usuario, Puesto, UnidadOrganica
+from app.models.puesto import Puesto
+from app.models.unidad_organica import UnidadOrganica
+from app.models.usuario import Usuario
 from app.schemas.usuario import UsuarioCreate, UsuarioUpdate
 
 class UsuarioCRUD:
