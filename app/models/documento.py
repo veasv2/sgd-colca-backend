@@ -1,30 +1,15 @@
-"""
-Modelos de Documentos para SGD-Colca
-"""
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from .base import BaseModel
 
-class TipoDocumento(BaseModel):
-    __tablename__ = "tipos_documento"
-    
-    codigo = Column(String(20), unique=True, nullable=False)
-    nombre = Column(String(100), nullable=False)
-    prefijo_correlativo = Column(String(10), nullable=False)
-    requiere_cargo = Column(Boolean, default=True)
-    plantilla_gdoc_id = Column(String(200))
-    
-    # Relaciones
-    documentos = relationship("DocumentoTDI", back_populates="tipo_documento")
-
-class DocumentoTDI(BaseModel):
-    __tablename__ = "documentos_tdi"
+class Documento(BaseModel):
+    __tablename__ = "documento" # La tabla se nombra en singular
     
     numero_correlativo = Column(String(50), unique=True, nullable=False)
-    tipo_documento_id = Column(UUID(as_uuid=True), ForeignKey("tipos_documento.id"), nullable=False)
-    usuario_emisor_id = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False)
-    unidad_emisora_id = Column(UUID(as_uuid=True), ForeignKey("unidades_organicas.id"), nullable=False)
+    tipo_documento_id = Column(UUID(as_uuid=True), ForeignKey("tipo_documento.id"), nullable=False)
+    unidad_emisora_id = Column(UUID(as_uuid=True), ForeignKey("unidad_organica.id"), nullable=False)
+    usuario_emisor_id = Column(UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=False)
     
     destinatario_interno = Column(String(200))
     destinatario_externo = Column(Text)

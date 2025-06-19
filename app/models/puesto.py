@@ -18,5 +18,4 @@ class Puesto(BaseModel):
     puede_aprobar = Column(Boolean, default=False)
     
     # Relaciones
-    unidad_organica = relationship("UnidadOrganica", back_populates="puestos")
-    usuarios = relationship("Usuario", back_populates="puesto")
+    unidad_organica = relationship("UnidadOrganica", back_populates="puestos")    
