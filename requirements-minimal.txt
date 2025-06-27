@@ -1,0 +1,18 @@
+# Framework principal
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Base de datos
+sqlalchemy==2.0.23
+
+# Autenticación básica
+passlib==1.7.4
+python-multipart==0.0.6
+
+# Validación y serialización
+pydantic==2.5.0
+pydantic-settings==2.0.3
+
+# Utilidades
+python-dotenv==1.0.0
+requests==2.31.0

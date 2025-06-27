@@ -1,0 +1,1 @@
+.\cloud-sql-proxy.exe sgd-colca-municipal-2025:us-central1:instancia-sql-colca --port=5432

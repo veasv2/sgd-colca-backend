@@ -1,0 +1,30 @@
+# requirements.txt
+# Dependencias para el Sistema de Gobernanza Digital (SGD)
+# Municipalidad Distrital de Colca
+
+# Framework principal
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Base de datos
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.13.0
+
+pyjwt[crypto]
+
+# Validación y serialización
+pydantic==2.5.0
+pydantic[email]==2.5.0
+pydantic-settings==2.1.0
+
+# Autenticación y seguridad
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Configuración
+python-dotenv==1.0.0
+
+# Utilidades adicionales
+typing-extensions==4.8.0
