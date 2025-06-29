@@ -11,7 +11,6 @@ from fastapi.responses import JSONResponse
 import logging
 import time
 from sqlalchemy import text
-from app.core.database import create_database
 
 from app.core.config import settings
 from app.routers import auth, organigrama
@@ -40,8 +39,6 @@ async def lifespan(app: FastAPI):
         from app.core.database import engine
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        # create_database()
-        # logger.info("✅ Tablas de base de datos creadas/verificadas")
         logger.info("✅ Conexión a base de datos establecida")
     except Exception as e:
         logger.error(f"❌ Error de conexión a base de datos: {e}")
