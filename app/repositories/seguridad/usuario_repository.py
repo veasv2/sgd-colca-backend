@@ -3,6 +3,7 @@
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from datetime import datetime
 
 from app.models import Usuario
 from app.schemas import UsuarioCreate, UsuarioUpdate
@@ -53,6 +54,31 @@ class UsuarioRepository(BaseRepository[Usuario, UsuarioCreate, UsuarioUpdate]):
         if exclude_id:
             query = query.filter(Usuario.id != exclude_id)
         return query.first() is not None
+
+    # === MÉTODOS PARA AUTENTICACIÓN ===
+
+    def actualizar_ultimo_acceso(self, db: Session, usuario: Usuario) -> Usuario:
+        """Actualizar fecha de último acceso y resetear intentos fallidos"""
+        usuario.ultimo_acceso = datetime.utcnow()
+        usuario.intentos_fallidos = 0  # Reset intentos fallidos en login exitoso
+        db.commit()
+        db.refresh(usuario)
+        return usuario
+
+    def incrementar_intentos_fallidos(self, db: Session, usuario: Usuario) -> Usuario:
+        """Incrementar contador de intentos fallidos"""
+        usuario.intentos_fallidos += 1
+        db.commit()
+        db.refresh(usuario)
+        return usuario
+
+    def bloquear_usuario(self, db: Session, usuario: Usuario, hasta: datetime) -> Usuario:
+        """Bloquear usuario hasta una fecha específica"""
+        usuario.bloqueado_hasta = hasta
+        usuario.intentos_fallidos = 0
+        db.commit()
+        db.refresh(usuario)
+        return usuario
 
 # Instancia del repositorio
 usuario_repository = UsuarioRepository()

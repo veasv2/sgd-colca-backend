@@ -3,9 +3,10 @@
 Configuración del Sistema de Gobernanza Digital (SGD)
 Municipalidad Distrital de Colca
 """
-
+from pydantic import Field
 from pydantic_settings import BaseSettings
 from typing import Optional
+import secrets
 
 class Settings(BaseSettings):
     """
@@ -28,12 +29,6 @@ class Settings(BaseSettings):
     DATABASE_NAME: str = "sgd_colca"
     DATABASE_USER: str = "sgd_user"
     DATABASE_PASSWORD: str = ""
-
-    # === CONFIGURACIÓN DE SEGURIDAD ===
-    SECRET_KEY: str = "SGD_Colca_2025_Secret_Key_Very_Secure_Change_In_Production"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 horas (jornada laboral)
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # === CONFIGURACIÓN DE GOOGLE CLOUD ===
     GOOGLE_CLOUD_PROJECT: str = ""
@@ -58,7 +53,35 @@ class Settings(BaseSettings):
     # === CONFIGURACIÓN DE ARCHIVOS ===
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
     ALLOWED_FILE_TYPES: list = [".pdf", ".doc", ".docx", ".jpg", ".png"]
+
+         # === CONFIGURACIÓN JWT ===
+    SECRET_KEY: str = Field(
+        default_factory=lambda: secrets.token_urlsafe(32),
+        description="Clave secreta para JWT. Se genera automáticamente si no se especifica."
+    )
+    ALGORITHM: str = Field(
+        default="HS256",
+        description="Algoritmo para JWT"
+    )
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
+        default=30,
+        description="Tiempo de expiración del token en minutos"
+    )
+    REFRESH_TOKEN_EXPIRE_DAYS: int = Field(
+        default=7,
+        description="Tiempo de expiración del refresh token en días"
+    )
     
+    # === CONFIGURACIÓN DE SEGURIDAD ===
+    MAX_LOGIN_ATTEMPTS: int = Field(
+        default=5,
+        description="Máximo número de intentos de login fallidos"
+    )
+    LOCKOUT_DURATION_MINUTES: int = Field(
+        default=15,
+        description="Duración del bloqueo en minutos tras intentos fallidos"
+    )
+
     class Config:
         env_file = ".env"
         case_sensitive = True

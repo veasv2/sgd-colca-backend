@@ -13,7 +13,7 @@ import time
 from sqlalchemy import text
 
 from app.core.config import settings
-from app.api.routers.seguridad import usuarios
+from app.api.routers.seguridad import usuarios, auth
 
 # Configurar logging
 logging.basicConfig(
@@ -114,6 +114,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 # === ROUTERS ===
 
 # Incluir router de usuarios
+app.include_router(auth.router, prefix="/api/v1")
 app.include_router(usuarios.router, prefix="/api/v1")
 
 # === ENDPOINTS PRINCIPALES ===
