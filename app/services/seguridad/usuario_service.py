@@ -11,7 +11,7 @@ from app.core.security import hash_password, verify_password, is_password_strong
 
 class UsuarioService:
     def __init__(self):
-        self.repository = UsuarioRepository
+        self.repository = UsuarioRepository()  # ✅ INSTANCIA, no clase
 
     def create_usuario(self, db: Session, usuario_data: UsuarioCreate) -> Usuario:
         """
@@ -51,13 +51,8 @@ class UsuarioService:
         usuario_dict['password_hash'] = hash_password(usuario_data.password)
         del usuario_dict['password']  # Remover la contraseña plana
         
-        # Usar el repositorio para crear
-        db_usuario = Usuario(**usuario_dict)
-        db.add(db_usuario)
-        db.commit()
-        db.refresh(db_usuario)
-        
-        return db_usuario
+        # ✅ Usar el método create del repositorio
+        return self.repository.create(db, usuario_data)
 
     def get_usuario(self, db: Session, usuario_id: int) -> Optional[Usuario]:
         """
