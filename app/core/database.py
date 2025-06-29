@@ -40,14 +40,3 @@ def get_database():
         raise
     finally:
         db.close()
-
-def create_database():
-    """
-    Crear todas las tablas en la base de datos
-    """
-    try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("Tablas de base de datos creadas exitosamente")
-    except Exception as e:
-        logger.error(f"Error al crear tablas: {e}")
-        raise

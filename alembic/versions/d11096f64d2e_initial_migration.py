@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: b79051cc0984
+Revision ID: d11096f64d2e
 Revises: 
-Create Date: 2025-06-28 19:24:49.123985
+Create Date: 2025-06-28 19:46:01.034648
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'b79051cc0984'
+revision: str = 'd11096f64d2e'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -76,20 +76,6 @@ def upgrade() -> None:
     schema='seguridad'
     )
     op.create_index(op.f('ix_seguridad_registro_eventos_id'), 'registro_eventos', ['id'], unique=False, schema='seguridad')
-    op.create_table('unidad_organica',
-    sa.Column('codigo', sa.String(length=10), nullable=False),
-    sa.Column('nombre', sa.String(length=200), nullable=False),
-    sa.Column('descripcion', sa.String(), nullable=True),
-    sa.Column('unidad_padre_id', sa.UUID(), nullable=True),
-    sa.Column('nivel', sa.Integer(), nullable=False),
-    sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.Column('activo', sa.Boolean(), nullable=False),
-    sa.ForeignKeyConstraint(['unidad_padre_id'], ['unidad_organica.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('codigo')
-    )
     op.create_table('puestos',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uuid', sa.String(length=36), nullable=True),
@@ -112,21 +98,6 @@ def upgrade() -> None:
     schema='organizacion'
     )
     op.create_index(op.f('ix_organizacion_puestos_id'), 'puestos', ['id'], unique=False, schema='organizacion')
-    op.create_table('puesto',
-    sa.Column('codigo', sa.String(length=20), nullable=False),
-    sa.Column('nombre', sa.String(length=200), nullable=False),
-    sa.Column('unidad_organica_id', sa.UUID(), nullable=False),
-    sa.Column('nivel_jerarquico', sa.Integer(), nullable=False),
-    sa.Column('puede_firmar', sa.Boolean(), nullable=True),
-    sa.Column('puede_aprobar', sa.Boolean(), nullable=True),
-    sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.Column('activo', sa.Boolean(), nullable=False),
-    sa.ForeignKeyConstraint(['unidad_organica_id'], ['unidad_organica.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('codigo')
-    )
     op.create_table('puesto_permisos',
     sa.Column('puesto_id', sa.Integer(), nullable=False),
     sa.Column('permiso_id', sa.Integer(), nullable=False),
@@ -191,10 +162,8 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_seguridad_usuarios_id'), table_name='usuarios', schema='seguridad')
     op.drop_table('usuarios', schema='seguridad')
     op.drop_table('puesto_permisos', schema='seguridad')
-    op.drop_table('puesto')
     op.drop_index(op.f('ix_organizacion_puestos_id'), table_name='puestos', schema='organizacion')
     op.drop_table('puestos', schema='organizacion')
-    op.drop_table('unidad_organica')
     op.drop_index(op.f('ix_seguridad_registro_eventos_id'), table_name='registro_eventos', schema='seguridad')
     op.drop_table('registro_eventos', schema='seguridad')
     op.drop_index(op.f('ix_seguridad_permisos_id'), table_name='permisos', schema='seguridad')

@@ -1,32 +1,40 @@
+# app/models/__init__.py
 """
-Modelos de SGD-Colca
-Importa todos los modelos para que Alembic los detecte
+Modelos de la aplicación
+Importar todos los modelos para que estén disponibles y Alembic los detecte
 """
-from .base import BaseModel
-from .unidad_organica import UnidadOrganica
-from .puesto import Puesto
 
+# Importar todos los modelos de seguridad
+from .seguridad_models import (
+    Usuario,
+    Permiso,
+    SesionUsuario,
+    RegistroEventos,
+    TipoUsuario,
+    EstadoUsuario,
+    TipoPermiso,
+    puesto_permisos
+)
+
+# Importar todos los modelos de organización
+from .organizacion_models import (
+    UnidadOrganica,
+    Puesto
+)
+
+# Hacer que todos los modelos estén disponibles cuando se importe el paquete
 __all__ = [
-    "BaseModel",
+    # Modelos de seguridad
+    "Usuario",
+    "Permiso", 
+    "SesionUsuario",
+    "RegistroEventos",
+    "TipoUsuario",
+    "EstadoUsuario",
+    "TipoPermiso",
+    "puesto_permisos",
+    
+    # Modelos de organización
     "UnidadOrganica",
-    "Puesto", 
+    "Puesto"
 ]
-
-
-# from .usuario import  Usuario
-# from .tipo_documento import TipoDocumento
-# from .documento import Documento
-# from .mesa_partes import ExpedienteMesaPartes
-# from .auditoria import AuditLog
-
-# Exportar todos los modelos
-# __all__ = [
-#     "BaseModel",
-#     "Puesto", 
-#     "UnidadOrganica", 
-#     "Usuario",
-#     "TipoDocumento", 
-#     "Documento",
-#     "ExpedienteMesaPartes",
-#     "AuditLog"
-# ]

@@ -1,10 +1,12 @@
+# alembic/env.py
+
 """
 Configuración de entorno para Alembic - SGD Colca (PostgreSQL con múltiples esquemas)
 """
 import os
 import sys
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool, text
+from sqlalchemy import create_engine, engine_from_config, pool, text
 from alembic import context
 
 # === Agregar la carpeta base del proyecto al sys.path ===
@@ -15,11 +17,9 @@ sys.path.append(BASE_DIR)
 from app.core.config import settings
 from app.core.database import Base
 
-# === Importar modelos (asegurar que estén registrados en Base.metadata) ===
-from app.models.organizacion_models import UnidadOrganica, Puesto
-from app.models.seguridad_models import (
-    Usuario, Permiso, SesionUsuario, RegistroEventos, puesto_permisos
-)
+# === Importar todos los modelos usando __init__.py ===
+# Esto carga automáticamente todos los modelos definidos en __init__.py
+import app.models  # Importa todo el paquete, registrando todos los modelos
 
 # === Configuración de Alembic ===
 config = context.config
@@ -32,13 +32,34 @@ target_metadata = Base.metadata
 # === Configuración para PostgreSQL con múltiples esquemas ===
 include_schemas = True
 
+# === Esquemas que maneja la aplicación ===
+SCHEMAS = ['seguridad', 'organizacion']
+
+
+def create_schemas_if_not_exist(connection):
+    """
+    Crear esquemas si no existen
+    """
+    try:
+        for schema in SCHEMAS:
+            connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
+        connection.commit()
+        print(f"✅ Esquemas verificados/creados: {', '.join(SCHEMAS)}")
+    except Exception as e:
+        print(f"⚠️ Error creando esquemas: {e}")
+        raise
+
 
 def run_migrations_offline() -> None:
     """
     Ejecutar migraciones en modo 'offline'
     """
     url = settings.DATABASE_URL
-    print(f"DEBUG OFFLINE - DATABASE_URL: '{url}'")
+    
+    if not url or url.strip() == "":
+        raise ValueError("DATABASE_URL está vacía. Verifica tu configuración.")
+    
+    print(f"🔄 Ejecutando migraciones offline con URL: {url[:50]}...")
     
     context.configure(
         url=url,
@@ -58,54 +79,25 @@ def run_migrations_online() -> None:
     """
     Ejecutar migraciones en modo 'online'
     """
-    # Debug: mostrar la URL que estamos usando
     database_url = settings.DATABASE_URL
-    print(f"DEBUG ONLINE - DATABASE_URL from settings: '{database_url}'")
     
     if not database_url or database_url.strip() == "":
         raise ValueError("DATABASE_URL está vacía. Verifica tu archivo .env")
     
-    # Debug adicional
-    print(f"DEBUG - settings module: {settings}")
-    print(f"DEBUG - DATABASE_URL type: {type(database_url)}")
-    print(f"DEBUG - DATABASE_URL starts with postgresql: {database_url.startswith('postgresql')}")
+    print(f"🔄 Ejecutando migraciones online con URL: {database_url[:50]}...")
     
-    # IMPORTANTE: No usar config.get_section porque contiene el placeholder
-    # Crear configuración limpia solo con nuestra URL
-    configuration = {
-        "sqlalchemy.url": database_url,
-        "sqlalchemy.echo": "false"
-    }
-    
-    print(f"DEBUG - Configuration URL: '{configuration.get('sqlalchemy.url')}'")
-    print(f"DEBUG - Configuration: {configuration}")
-
-    # Probar crear engine directamente primero
-    try:
-        from sqlalchemy import create_engine
-        test_engine = create_engine(database_url)
-        print("✅ Engine directo creado exitosamente")
-        test_engine.dispose()
-    except Exception as e:
-        print(f"❌ Error creando engine directo: {e}")
-        raise
-
-    # Usar create_engine directamente en lugar de engine_from_config
+    # Crear engine directamente con la URL de configuración
     connectable = create_engine(
         database_url,
         poolclass=pool.NullPool,
+        echo=False  # Cambiar a True si necesitas debug de SQL
     )
 
     with connectable.connect() as connection:
         # Crear esquemas si no existen
-        try:
-            connection.execute(text("CREATE SCHEMA IF NOT EXISTS seguridad"))
-            connection.execute(text("CREATE SCHEMA IF NOT EXISTS organizacion"))
-            connection.commit()
-            print("✅ Esquemas creados/verificados correctamente")
-        except Exception as e:
-            print(f"⚠️ Error creando esquemas: {e}")
+        create_schemas_if_not_exist(connection)
 
+        # Configurar contexto de Alembic
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
@@ -115,9 +107,12 @@ def run_migrations_online() -> None:
         )
 
         with context.begin_transaction():
+            print(f"📊 Modelos detectados: {len(target_metadata.tables)} tablas")
             context.run_migrations()
+            print("✅ Migraciones completadas exitosamente")
 
 
+# === Ejecutar migraciones ===
 if context.is_offline_mode():
     run_migrations_offline()
 else:
