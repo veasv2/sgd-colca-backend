@@ -1,71 +1,61 @@
 # app/core/security.py
-"""
-Utilidades de seguridad para SGD Colca
-"""
 
-import hashlib
+from passlib.context import CryptContext
+from typing import Optional
 import secrets
-import hmac
+import string
 
+# Configuración del contexto de passwords
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def generate_password_hash(password: str) -> str:
+def hash_password(password: str) -> str:
     """
-    Generar hash seguro de contraseña usando PBKDF2
+    Crear hash de una contraseña
+    """
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Verificar si la contraseña coincide con el hash
+    """
+    return pwd_context.verify(plain_password, hashed_password)
+
+def generate_random_password(length: int = 12) -> str:
+    """
+    Generar una contraseña aleatoria segura
+    """
+    alphabet = string.ascii_letters + string.digits + "!@#$%&*"
+    password = ''.join(secrets.choice(alphabet) for _ in range(length))
+    return password
+
+def is_password_strong(password: str) -> tuple[bool, list[str]]:
+    """
+    Validar si una contraseña cumple con los criterios de seguridad
     
-    Args:
-        password (str): Contraseña en texto plano
-        
     Returns:
-        str: Hash de la contraseña en formato pbkdf2_sha256$salt$hash
+        tuple: (es_valida, lista_de_errores)
     """
-    salt = secrets.token_hex(16)
-    password_hash = hashlib.pbkdf2_hmac(
-        'sha256',
-        password.encode('utf-8'),
-        salt.encode('utf-8'),
-        100000  # 100,000 iteraciones
-    )
-    return f"pbkdf2_sha256${salt}${password_hash.hex()}"
-
-
-def check_password_hash(password_hash: str, password: str) -> bool:
-    """
-    Verificar si una contraseña coincide con su hash
+    errors = []
     
-    Args:
-        password_hash (str): Hash almacenado
-        password (str): Contraseña a verificar
-        
-    Returns:
-        bool: True si la contraseña es correcta
-    """
-    try:
-        algorithm, salt, stored_hash = password_hash.split('$')
-        
-        if algorithm != 'pbkdf2_sha256':
-            return False
-        
-        password_hash_check = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            salt.encode('utf-8'),
-            100000
-        )
-        
-        return hmac.compare_digest(stored_hash, password_hash_check.hex())
-        
-    except (ValueError, AttributeError):
-        return False
-
-
-def generate_secure_token(length: int = 32) -> str:
-    """
-    Generar token seguro para sesiones
+    # Longitud mínima
+    if len(password) < 8:
+        errors.append("La contraseña debe tener al menos 8 caracteres")
     
-    Args:
-        length (int): Longitud del token en bytes
-        
-    Returns:
-        str: Token hexadecimal
-    """
-    return secrets.token_hex(length)
+    # Al menos una mayúscula
+    if not any(c.isupper() for c in password):
+        errors.append("La contraseña debe contener al menos una letra mayúscula")
+    
+    # Al menos una minúscula
+    if not any(c.islower() for c in password):
+        errors.append("La contraseña debe contener al menos una letra minúscula")
+    
+    # Al menos un número
+    if not any(c.isdigit() for c in password):
+        errors.append("La contraseña debe contener al menos un número")
+    
+    # Al menos un carácter especial
+    special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+    if not any(c in special_chars for c in password):
+        errors.append("La contraseña debe contener al menos un carácter especial")
+    
+    return len(errors) == 0, errors

@@ -1,7 +1,7 @@
 # app/main.py
 """
-Aplicación Principal del Sistema de Gobernanza Digital (SGD)
-Municipalidad Distrital de Colca
+Aplicación Principal del Sistema de Gestión de Usuarios
+Municipalidad Distrital de Colca - Módulo de Seguridad
 """
 
 from contextlib import asynccontextmanager
@@ -13,7 +13,7 @@ import time
 from sqlalchemy import text
 
 from app.core.config import settings
-from app.routers import auth, organigrama
+from app.api.routers.seguridad import usuarios
 
 # Configurar logging
 logging.basicConfig(
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     Manejador de eventos de ciclo de vida de la aplicación
     """
     # === STARTUP ===
-    logger.info(f"Iniciando {settings.PROJECT_NAME} v{settings.VERSION}")
+    logger.info(f"Iniciando {settings.PROJECT_NAME} - Módulo Usuarios")
     logger.info(f"Entorno: {settings.ENVIRONMENT}")
     logger.info(f"Debug: {settings.DEBUG}")
     
@@ -47,12 +47,12 @@ async def lifespan(app: FastAPI):
     yield
     
     # === SHUTDOWN ===
-    logger.info(f"Cerrando {settings.PROJECT_NAME}")
+    logger.info("Cerrando aplicación")
 
 # Crear aplicación FastAPI con lifespan
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    description=settings.PROJECT_DESCRIPTION,
+    title=f"{settings.PROJECT_NAME} - Gestión de Usuarios",
+    description="API para gestión de usuarios del sistema de gobernanza digital",
     version=settings.VERSION,
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
@@ -113,9 +113,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # === ROUTERS ===
 
-# Incluir routers de la aplicación
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(organigrama.router, prefix="/api/v1")
+# Incluir router de usuarios
+app.include_router(usuarios.router, prefix="/api/v1")
 
 # === ENDPOINTS PRINCIPALES ===
 
@@ -125,16 +124,16 @@ async def root():
     Endpoint raíz del sistema
     """
     return {
-        "message": "Sistema de Gobernanza Digital",
+        "message": "Sistema de Gestión de Usuarios",
         "municipalidad": settings.MUNICIPALITY_NAME,
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
         "status": "Activo",
+        "modulo": "Gestión de Usuarios",
         "features": [
-            "Autenticación y Autorización",
-            "Organigrama Digital",
-            "Gestión de Usuarios",
-            "Control de Acceso Basado en Roles"
+            "CRUD de Usuarios",
+            "Validación de Contraseñas",
+            "Gestión de Perfiles"
         ]
     }
 
@@ -151,7 +150,7 @@ async def health_check():
         
         return {
             "status": "healthy",
-            "service": "SGD Colca",
+            "service": "Gestión de Usuarios",
             "version": settings.VERSION,
             "database": "connected",
             "timestamp": time.time()
@@ -162,55 +161,38 @@ async def health_check():
             status_code=503,
             content={
                 "status": "unhealthy", 
-                "service": "SGD Colca",
+                "service": "Gestión de Usuarios",
                 "error": str(e) if settings.DEBUG else "Database connection failed"
             }
         )
-
-@app.get("/info", tags=["Sistema"])
-async def system_info():
-    """
-    Información detallada del sistema
-    """
-    return {
-        "sistema": {
-            "nombre": settings.PROJECT_NAME,
-            "version": settings.VERSION,
-            "entorno": settings.ENVIRONMENT,
-            "debug": settings.DEBUG
-        },
-        "municipalidad": {
-            "nombre": settings.MUNICIPALITY_NAME,
-            "ruc": settings.MUNICIPALITY_RUC,
-            "direccion": settings.MUNICIPALITY_ADDRESS
-        },
-        "configuracion": {
-            "base_datos": "PostgreSQL" if "postgresql" in settings.DATABASE_URL else "Otra",
-            "autenticacion": "JWT",
-            "cors_habilitado": True
-        }
-    }
 
 # === CONFIGURACIÓN ADICIONAL PARA DESARROLLO ===
 
 if settings.DEBUG:
     # Endpoint adicional para desarrollo
-    @app.get("/debug/config", tags=["Debug"])
-    async def debug_config():
+    @app.get("/debug/usuarios-info", tags=["Debug"])
+    async def debug_usuarios_info():
         """
-        Muestra configuración actual (solo en modo debug)
+        Información del módulo de usuarios (solo en modo debug)
         """
         return {
             "warning": "Este endpoint solo está disponible en modo debug",
-            "config": {
-                "PROJECT_NAME": settings.PROJECT_NAME,
-                "VERSION": settings.VERSION,
-                "ENVIRONMENT": settings.ENVIRONMENT,
-                "DEBUG": settings.DEBUG,
-                "LOG_LEVEL": settings.LOG_LEVEL,
-                "DATABASE_URL": settings.DATABASE_URL[:20] + "..." if len(settings.DATABASE_URL) > 20 else settings.DATABASE_URL,
-                "ACCESS_TOKEN_EXPIRE_MINUTES": settings.ACCESS_TOKEN_EXPIRE_MINUTES
-            }
+            "modulo": "Gestión de Usuarios",
+            "endpoints_disponibles": [
+                "POST /api/v1/usuarios/ - Crear usuario",
+                "GET /api/v1/usuarios/ - Listar usuarios",
+                "GET /api/v1/usuarios/{id} - Obtener usuario",
+                "PUT /api/v1/usuarios/{id} - Actualizar usuario",
+                "DELETE /api/v1/usuarios/{id} - Eliminar usuario",
+                "GET /api/v1/usuarios/username/{username} - Buscar por username",
+                "PATCH /api/v1/usuarios/{id}/change-password - Cambiar contraseña"
+            ],
+            "validaciones": [
+                "Username único",
+                "Email único", 
+                "DNI único",
+                "Contraseña segura"
+            ]
         }
     
     logger.info("🔧 Modo debug activado - endpoints adicionales disponibles")

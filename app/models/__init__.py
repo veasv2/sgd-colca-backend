@@ -5,36 +5,15 @@ Importar todos los modelos para que estén disponibles y Alembic los detecte
 """
 
 # Importar todos los modelos de seguridad
-from .seguridad_models import (
-    Usuario,
-    Permiso,
-    SesionUsuario,
-    RegistroEventos,
-    TipoUsuario,
-    EstadoUsuario,
-    TipoPermiso,
-    puesto_permisos
-)
-
-# Importar todos los modelos de organización
-from .organizacion_models import (
+from .organizacion import (
     UnidadOrganica,
     Puesto
 )
 
-# Hacer que todos los modelos estén disponibles cuando se importe el paquete
-__all__ = [
-    # Modelos de seguridad
-    "Usuario",
-    "Permiso", 
-    "SesionUsuario",
-    "RegistroEventos",
-    "TipoUsuario",
-    "EstadoUsuario",
-    "TipoPermiso",
-    "puesto_permisos",
-    
-    # Modelos de organización
-    "UnidadOrganica",
-    "Puesto"
-]
+# Importar todos los modelos de organización
+from .seguridad import (
+    Usuario,
+    Permiso,
+    SesionUsuario,
+    RegistroEventos    
+)
