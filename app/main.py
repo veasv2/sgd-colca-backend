@@ -4,6 +4,7 @@ Aplicación Principal del Sistema de Gobernanza Digital (SGD)
 Municipalidad Distrital de Colca
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -22,14 +23,44 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Crear aplicación FastAPI
+# === LIFESPAN EVENTS ===
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Manejador de eventos de ciclo de vida de la aplicación
+    """
+    # === STARTUP ===
+    logger.info(f"Iniciando {settings.PROJECT_NAME} v{settings.VERSION}")
+    logger.info(f"Entorno: {settings.ENVIRONMENT}")
+    logger.info(f"Debug: {settings.DEBUG}")
+    
+    # Verificar conexión a base de datos
+    try:
+        from app.core.database import engine
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        # create_database()
+        # logger.info("✅ Tablas de base de datos creadas/verificadas")
+        logger.info("✅ Conexión a base de datos establecida")
+    except Exception as e:
+        logger.error(f"❌ Error de conexión a base de datos: {e}")
+    
+    # La aplicación está funcionando
+    yield
+    
+    # === SHUTDOWN ===
+    logger.info(f"Cerrando {settings.PROJECT_NAME}")
+
+# Crear aplicación FastAPI con lifespan
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.PROJECT_DESCRIPTION,
     version=settings.VERSION,
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
-    openapi_url="/openapi.json" if settings.DEBUG else None
+    openapi_url="/openapi.json" if settings.DEBUG else None,
+    lifespan=lifespan
 )
 
 # === MIDDLEWARE ===
@@ -162,35 +193,6 @@ async def system_info():
             "cors_habilitado": True
         }
     }
-
-# === EVENTOS DE STARTUP Y SHUTDOWN ===
-
-@app.on_event("startup")
-async def startup_event():
-    """
-    Eventos que se ejecutan al iniciar la aplicación
-    """
-    logger.info(f"Iniciando {settings.PROJECT_NAME} v{settings.VERSION}")
-    logger.info(f"Entorno: {settings.ENVIRONMENT}")
-    logger.info(f"Debug: {settings.DEBUG}")
-    
-    # Verificar conexión a base de datos
-    try:
-        from app.core.database import engine
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        create_database()
-        logger.info("✅ Tablas de base de datos creadas/verificadas")
-        logger.info("✅ Conexión a base de datos establecida")
-    except Exception as e:
-        logger.error(f"❌ Error de conexión a base de datos: {e}")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """
-    Eventos que se ejecutan al cerrar la aplicación
-    """
-    logger.info(f"Cerrando {settings.PROJECT_NAME}")
 
 # === CONFIGURACIÓN ADICIONAL PARA DESARROLLO ===
 
