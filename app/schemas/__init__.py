@@ -1,9 +1,7 @@
 # app/schemas/__init__.py
 
 from .seguridad import (
-    UsuarioCreate, UsuarioUpdate, UsuarioRead, UsuarioInDB,
-    PermisoCreate, PermisoUpdate, PermisoRead,
-    SesionUsuarioRead, RegistroEventosRead
+    UsuarioCreate, UsuarioUpdate, UsuarioInDB,
 )
 
 from .organizacion import (

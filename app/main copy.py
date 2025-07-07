@@ -13,8 +13,7 @@ import time
 from sqlalchemy import text
 
 from app.core.config import settings
-from app.api.routers.seguridad import usuario, auth
-from app.api.routers import usuario_router
+from app.api.routers.seguridad import usuarios, auth
 
 # Configurar logging
 logging.basicConfig(
@@ -114,10 +113,9 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # === ROUTERS ===
 
-# Incluir routers de autenticación y usuarios
+# Incluir router de usuarios
 app.include_router(auth.router, prefix="/api/v1")
-app.include_router(usuario.router, prefix="/api/v1")  # CRUD completo de usuarios
-app.include_router(usuario.router, prefix="/api/v1")   # Lista filtrada de usuarios
+app.include_router(usuarios.router, prefix="/api/v1")
 
 # === ENDPOINTS PRINCIPALES ===
 
@@ -136,8 +134,7 @@ async def root():
         "features": [
             "CRUD de Usuarios",
             "Validación de Contraseñas",
-            "Gestión de Perfiles",
-            "Lista Filtrada de Usuarios"
+            "Gestión de Perfiles"
         ]
     }
 
@@ -182,48 +179,20 @@ if settings.DEBUG:
         return {
             "warning": "Este endpoint solo está disponible en modo debug",
             "modulo": "Gestión de Usuarios",
-            "endpoints_disponibles": {
-                "crud_usuarios": [
-                    "POST /api/v1/usuarios/ - Crear usuario",
-                    "GET /api/v1/usuarios/ - Listar usuarios",
-                    "GET /api/v1/usuarios/{id} - Obtener usuario",
-                    "PUT /api/v1/usuarios/{id} - Actualizar usuario",
-                    "DELETE /api/v1/usuarios/{id} - Eliminar usuario",
-                    "GET /api/v1/usuarios/email/{email} - Buscar por email",
-                    "GET /api/v1/usuarios/dni/{dni} - Buscar por DNI",
-                    "PATCH /api/v1/usuarios/{id}/change-password - Cambiar contraseña",
-                    "PATCH /api/v1/usuarios/{id}/activate - Activar usuario",
-                    "PATCH /api/v1/usuarios/{id}/deactivate - Desactivar usuario",
-                    "PATCH /api/v1/usuarios/{id}/suspend - Suspender usuario",
-                    "PATCH /api/v1/usuarios/{id}/unlock - Desbloquear usuario"
-                ],
-                "filtros_usuarios": [
-                    "POST /api/v1/seguridad/usuario/lista - Lista filtrada de usuarios"
-                ],
-                "autenticacion": [
-                    "POST /api/v1/auth/login - Iniciar sesión",
-                    "POST /api/v1/auth/logout - Cerrar sesión",
-                    "POST /api/v1/auth/refresh - Renovar token"
-                ]
-            },
+            "endpoints_disponibles": [
+                "POST /api/v1/usuarios/ - Crear usuario",
+                "GET /api/v1/usuarios/ - Listar usuarios",
+                "GET /api/v1/usuarios/{id} - Obtener usuario",
+                "PUT /api/v1/usuarios/{id} - Actualizar usuario",
+                "DELETE /api/v1/usuarios/{id} - Eliminar usuario",
+                "GET /api/v1/usuarios/username/{username} - Buscar por username",
+                "PATCH /api/v1/usuarios/{id}/change-password - Cambiar contraseña"
+            ],
             "validaciones": [
-                "Email institucional único",
-                "DNI peruano único", 
-                "Contraseña segura (mínimo 8 caracteres)",
-                "Nombres y apellidos válidos",
-                "Teléfono válido"
-            ],
-            "tipos_usuario": [
-                "SUPERADMIN",
-                "ALCALDE", 
-                "FUNCIONARIO"
-            ],
-            "estados_usuario": [
-                "ACTIVO",
-                "INACTIVO",
-                "SUSPENDIDO",
-                "BAJA",
-                "PENDIENTE"
+                "Username único",
+                "Email único", 
+                "DNI único",
+                "Contraseña segura"
             ]
         }
     

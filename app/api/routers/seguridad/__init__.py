@@ -1,3 +1,3 @@
 #app/api/routers/seguridad/__init__.py
 
-from .usuarios import router as usuarios_router
+from .usuario import router as usuario_router
