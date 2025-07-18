@@ -12,9 +12,10 @@ from app.schemas.common.filter_schemas import (
     BaseListParams
 )
 from app.schemas.common.sorting_schemas import SortConfig, SortUtils
+from app.schemas.common.pagination_schemas import ListaResponse
 
 # Importar el schema de usuario existente
-from app.schemas.seguridad.usuario_schemas import UsuarioInDB
+from app.schemas.seguridad.usuario.usuario_schemas import UsuarioInDB
 
 class UsuarioSortableColumns:
     ID = "id"
@@ -108,14 +109,7 @@ class UsuarioListaRequest(BaseListParams[UsuarioWhere]):
                 if sort_column.column not in allowed_columns:
                     raise ValueError(f"Columna '{sort_column.column}' no permitida para ordenamiento. Columnas permitidas: {allowed_columns}")
 
-class UsuarioListaResponse(BaseModel):
-    data: List[UsuarioInDB]
-    total: int
-    inicio: int
-    fin: int
-    totalPages: int
-    hasNextPage: bool
-    hasPrevPage: bool
-    currentPage: int
-    # Información adicional sobre el ordenamiento aplicado
-    appliedSort: Optional[SortConfig] = None
+
+# Respuesta paginada genérica para usuarios
+class UsuarioListaResponse(ListaResponse[UsuarioInDB]):
+    pass

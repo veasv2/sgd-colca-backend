@@ -2,7 +2,7 @@
 
 from typing import List
 from app.schemas.common.summary_schemas import SummaryRequest, SummaryResponse
-from app.schemas.seguridad.usuario_filter_schemas import UsuarioWhere
+from app.schemas.seguridad.usuario.usuario_filter_schemas import UsuarioWhere
 
 class UsuarioSummaryGroupableColumns:
     """Columnas permitidas para agrupar en resúmenes de usuarios"""
