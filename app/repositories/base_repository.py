@@ -3,9 +3,10 @@
 from typing import Generic, TypeVar, Type, Optional, List, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, asc
-from app.core.database import Base
+from typing import Any
 
-ModelType = TypeVar("ModelType", bound=Base)
+# Usar Any como bound para evitar error de Pylance
+ModelType = TypeVar("ModelType", bound=Any)
 CreateSchemaType = TypeVar("CreateSchemaType")
 UpdateSchemaType = TypeVar("UpdateSchemaType")
 

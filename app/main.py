@@ -14,7 +14,6 @@ from sqlalchemy import text
 
 from app.core.config import settings
 from app.api.routers.seguridad import usuario, auth
-from app.api.routers import usuario_router
 
 # Configurar logging
 logging.basicConfig(

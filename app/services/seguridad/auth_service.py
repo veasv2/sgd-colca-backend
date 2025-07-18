@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from app.models import Usuario
+from app.models.seguridad.usuario_model import Usuario
 from app.schemas.seguridad.auth_schemas import LoginRequest, LoginResponse, UserTokenInfo
 from app.repositories.seguridad.usuario_repository import usuario_repository  # Esto debe ser la instancia
 from app.core.security import verify_password

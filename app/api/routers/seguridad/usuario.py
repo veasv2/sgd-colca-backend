@@ -4,13 +4,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 # Schemas para filtros y listas
-from app.schemas.seguridad.usuario_filter_schemas import (
+from app.schemas.seguridad.usuario.usuario_filter_schemas import (
     UsuarioListaRequest,
     UsuarioListaResponse
 )
 
 # Schemas para resúmenes
-from app.schemas.seguridad.usuario_summary_schemas import (
+from app.schemas.seguridad.usuario.usuario_summary_schemas import (
     UsuarioSummaryRequest,
     UsuarioSummaryResponse
 )

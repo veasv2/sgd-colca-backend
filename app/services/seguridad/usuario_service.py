@@ -6,13 +6,13 @@ from sqlalchemy.orm import Session
 from app.models.seguridad.usuario_model import Usuario
 from app.services.base_service import BaseListService
 from app.services.base_summary_service import BaseSummaryService
-from app.schemas.seguridad.usuario_filter_schemas import (
+from app.schemas.seguridad.usuario.usuario_filter_schemas import (
     UsuarioListaRequest,
     UsuarioListaResponse,
     UsuarioWhere,
     UsuarioSortableColumns
 )
-from app.schemas.seguridad.usuario_summary_schemas import (
+from app.schemas.seguridad.usuario.usuario_summary_schemas import (
     UsuarioSummaryRequest,
     UsuarioSummaryResponse,
     UsuarioSummaryGroupableColumns
