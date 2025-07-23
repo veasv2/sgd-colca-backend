@@ -38,9 +38,9 @@ async def lifespan(app: FastAPI):
     
     # Verificar conexión a base de datos
     try:
-        from app.core.database import engine
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
+        from app.core.database import async_engine
+        async with async_engine.begin() as conn:
+            await conn.execute(text("SELECT 1"))
         logger.info("✅ Conexión a base de datos establecida")
     except Exception as e:
         logger.error(f"❌ Error de conexión a base de datos: {e}")

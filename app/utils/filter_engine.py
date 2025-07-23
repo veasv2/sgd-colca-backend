@@ -1,8 +1,8 @@
 # app/utils/filter_engine.py
 
 from typing import Any, List, Type
-from sqlalchemy.orm import Query, Session
-from sqlalchemy import or_, and_, Column
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import or_, and_, Column, select, func
 import math
 
 from app.schemas.common.filter_schemas import (
@@ -17,25 +17,29 @@ from app.schemas.common.filter_schemas import (
 class FilterEngine:
     
     @staticmethod
-    def apply_filters(query: Query, model_class: Type[Any], where_filters: Any) -> Query:
+    def apply_filters(stmt, model_class: Type[Any], where_filters: Any):
+        """Aplicar filtros a un statement SQLAlchemy (asíncrono)"""
         if not where_filters:
-            return query
+            return stmt
             
         conditions = FilterEngine._build_conditions(model_class, where_filters)
         
         if conditions:
             # Si hay múltiples condiciones al nivel raíz, aplicar AND implícito
             if len(conditions) == 1:
-                query = query.filter(conditions[0])
+                stmt = stmt.where(conditions[0])
             else:
-                query = query.filter(and_(*conditions))
+                stmt = stmt.where(and_(*conditions))
             
-        return query
+        return stmt
     
     @staticmethod
-    def apply_pagination(query: Query, pagination: PaginationConfig) -> tuple[List[Any], dict]:
+    async def apply_pagination(db: AsyncSession, stmt, pagination: PaginationConfig) -> tuple[List[Any], dict]:
+        """Aplicar paginación asíncrona"""
         # Contar total antes de paginación
-        total = query.count()
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        result = await db.execute(count_stmt)
+        total = result.scalar()
         
         # Calcular offset
         page = pagination.page
@@ -43,7 +47,9 @@ class FilterEngine:
         offset = (page - 1) * page_size
         
         # Aplicar paginación
-        data = query.offset(offset).limit(page_size).all()
+        stmt = stmt.offset(offset).limit(page_size)
+        result = await db.execute(stmt)
+        data = result.scalars().all()
         
         # Calcular metadata
         total_pages = math.ceil(total / page_size) if total > 0 else 1

@@ -1,11 +1,10 @@
 # app/core/database.py
 """
-Configuración de la base de datos PostgreSQL
+Configuración de la base de datos PostgreSQL - 100% ASÍNCRONA
 """
 
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 import logging
 
@@ -13,30 +12,37 @@ import logging
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL))
 logger = logging.getLogger(__name__)
 
-# Crear engine de SQLAlchemy
-engine = create_engine(
-    settings.DATABASE_URL,
+# Crear engine asíncrono
+async_database_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+async_engine = create_async_engine(
+    async_database_url,
     future=True,
     pool_pre_ping=True,
-    echo=settings.DEBUG  # Mostrar queries SQL en modo debug
+    echo=settings.DEBUG
 )
 
-# Crear SessionLocal
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Crear AsyncSessionLocal
+AsyncSessionLocal = async_sessionmaker(
+    bind=async_engine,
+    class_=AsyncSession,
+    autoflush=False,
+    autocommit=False,
+    expire_on_commit=False
+)
 
 # Base para los modelos
 Base = declarative_base()
 
-def get_database():
+async def get_db():
     """
-    Dependencia para obtener la sesión de base de datos
+    Dependencia para obtener la sesión de base de datos asíncrona
     """
-    db = SessionLocal()
-    try:
-        yield db
-    except Exception as e:
-        logger.error(f"Error en la sesión de base de datos: {e}")
-        db.rollback()
-        raise
-    finally:
-        db.close()
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        except Exception as e:
+            logger.error(f"Error en la sesión asíncrona de base de datos: {e}")
+            await session.rollback()
+            raise
+        finally:
+            await session.close()

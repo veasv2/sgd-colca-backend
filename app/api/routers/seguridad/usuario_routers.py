@@ -1,7 +1,7 @@
 # app/api/routers/seguridad/usuario_routers.py
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Schemas para filtros y listas
 from app.schemas.seguridad.usuario.usuario_filter_schemas import (
@@ -15,67 +15,86 @@ from app.schemas.seguridad.usuario.usuario_summary_schemas import (
     UsuarioSummaryResponse
 )
 
-
 # Schemas para CRUD
 from app.schemas.seguridad.usuario.usuario_schemas import (
     UsuarioCreate,
     UsuarioUpdate,
     UsuarioInDB
 )
-from app.services.seguridad.usuario_service import usuario_service
-from app.core.database import get_database
 
-router  = APIRouter(
+from app.core.deps import get_async_db, get_usuario_service
+from app.services.seguridad.usuario_service import UsuarioService
+
+router = APIRouter(
     prefix="/seguridad/usuario",
     tags=["usuario"]
 )
 
-@router .post("/lista", response_model=UsuarioListaResponse)
-def lista_usuarios(
+@router.post("/lista", response_model=UsuarioListaResponse)
+async def lista_usuarios(
     request: UsuarioListaRequest,
-    db: Session = Depends(get_database)
+    db: AsyncSession = Depends(get_async_db),
+    usuario_service: UsuarioService = Depends(get_usuario_service)
 ):   
     """Obtiene la lista paginada de usuarios con filtros y ordenamiento"""
-    return usuario_service.lista_usuario(db=db, request=request)
+    return await usuario_service.lista_usuario(db=db, request=request)
 
-@router .post("/resumen", response_model=UsuarioSummaryResponse)
-def resumen_usuarios(
+@router.post("/resumen", response_model=UsuarioSummaryResponse)
+async def resumen_usuarios(
     request: UsuarioSummaryRequest,
-    db: Session = Depends(get_database)
+    db: AsyncSession = Depends(get_async_db),
+    usuario_service: UsuarioService = Depends(get_usuario_service)
 ):
     """Genera resumen agrupado de usuarios"""
-    return usuario_service.resumen_usuario(db=db, request=request)
+    return await usuario_service.resumen_usuario(db=db, request=request)
 
 # --- CRUD Endpoints ---
 
-@router.post("/", response_model=UsuarioInDB)
-def crear_usuario(request: UsuarioCreate, db: Session = Depends(get_database)):
+@router.post("/", response_model=UsuarioInDB, status_code=status.HTTP_201_CREATED)
+async def crear_usuario(
+    request: UsuarioCreate, 
+    db: AsyncSession = Depends(get_async_db),
+    usuario_service: UsuarioService = Depends(get_usuario_service)
+):
     """Crear un nuevo usuario"""
-    return usuario_service.crear_usuario(db=db, obj_in=request)
+    return await usuario_service.crear_usuario(db=db, obj_in=request)
 
 @router.get("/{uuid}", response_model=UsuarioInDB)
-def obtener_usuario(uuid: str, db: Session = Depends(get_database)):
-    """Obtener usuario por ID"""
-    usuario = usuario_service.obtener_usuario(db=db, uuid=uuid)
-    if not usuario:
-        from fastapi import HTTPException
+async def obtener_usuario(
+    uuid: str, 
+    db: AsyncSession = Depends(get_async_db),
+    usuario_service: UsuarioService = Depends(get_usuario_service)
+):
+    """Obtener usuario por UUID"""
+    try:
+        return await usuario_service.obtener_usuario(db=db, uuid=uuid)
+    except HTTPException:
+        raise
+    except Exception:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    return usuario
 
 @router.put("/{uuid}", response_model=UsuarioInDB)
-def actualizar_usuario(uuid: str, request: UsuarioUpdate, db: Session = Depends(get_database)):
-    """Actualizar usuario por ID"""
-    usuario = usuario_service.actualizar_usuario(db=db, uuid=uuid, obj_in=request)
-    if not usuario:
-        from fastapi import HTTPException
+async def actualizar_usuario(
+    uuid: str, 
+    request: UsuarioUpdate, 
+    db: AsyncSession = Depends(get_async_db),
+    usuario_service: UsuarioService = Depends(get_usuario_service)
+):
+    """Actualizar usuario por UUID"""
+    try:
+        return await usuario_service.actualizar_usuario(db=db, uuid=uuid, obj_in=request)
+    except HTTPException:
+        raise
+    except Exception:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    return usuario
 
-@router.delete("/{uuid}", response_model=UsuarioInDB)
-def eliminar_usuario(uuid: str, db: Session = Depends(get_database)):
-    """Eliminar usuario por ID"""
-    usuario = usuario_service.eliminar_usuario(db=db, uuid=uuid)
-    if not usuario:
-        from fastapi import HTTPException
+@router.delete("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
+async def eliminar_usuario(
+    uuid: str, 
+    db: AsyncSession = Depends(get_async_db),
+    usuario_service: UsuarioService = Depends(get_usuario_service)
+):
+    """Eliminar usuario por UUID"""
+    success = await usuario_service.eliminar_usuario(db=db, uuid=uuid)
+    if not success:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    return usuario

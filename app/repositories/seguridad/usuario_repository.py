@@ -1,9 +1,4 @@
-# app/repositories/usuario_repository.py
-
-from typing import Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from datetime import datetime
+# app/repositories/seguridad/usuario_repository.py
 
 from app.models.seguridad.usuario_model import Usuario
 from app.schemas.seguridad.usuario.usuario_schemas import UsuarioCreate, UsuarioUpdate
@@ -13,5 +8,5 @@ class UsuarioRepository(BaseRepository[Usuario, UsuarioCreate, UsuarioUpdate]):
     def __init__(self):
         super().__init__(Usuario)
 
-# Instancia del repositorio
+# Instancia del repositorio para inyección de dependencias
 usuario_repository = UsuarioRepository()

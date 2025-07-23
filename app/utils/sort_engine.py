@@ -1,26 +1,26 @@
 # app/utils/sort_engine.py
 
 from typing import Type, List
-from sqlalchemy.orm import Query
 from sqlalchemy import desc, asc
 from app.schemas.common.sorting_schemas import SortConfig, SortColumn, SortDirection, SortUtils
 
 class SortEngine:
     @staticmethod
-    def apply_sorting(query: Query, model_class: Type, sort_config: SortConfig) -> Query:
+    def apply_sorting(stmt, model_class: Type, sort_config: SortConfig):
+        """Aplicar ordenamiento a statement asíncrono"""
         if SortUtils.is_empty(sort_config):
-            return query
+            return stmt
         
         try:
             for sort_column in sort_config:
                 column_attr = SortEngine._get_column_attribute(model_class, sort_column.column)
                 
                 if sort_column.direction == SortDirection.DESC:
-                    query = query.order_by(desc(column_attr))
+                    stmt = stmt.order_by(desc(column_attr))
                 else:
-                    query = query.order_by(asc(column_attr))
+                    stmt = stmt.order_by(asc(column_attr))
             
-            return query
+            return stmt
             
         except Exception as e:
             raise ValueError(f"Error al aplicar ordenamiento: {str(e)}")
