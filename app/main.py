@@ -13,7 +13,9 @@ import time
 from sqlalchemy import text
 
 from app.core.config import settings
-from app.api.routers.seguridad import usuario, auth
+
+# routers
+from app.api.routers.seguridad.usuario_routers import router as usuario_router
 
 # Configurar logging
 logging.basicConfig(
@@ -114,9 +116,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 # === ROUTERS ===
 
 # Incluir routers de autenticación y usuarios
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(usuario.router, prefix="/api/v1")  # CRUD completo de usuarios
-app.include_router(usuario.router, prefix="/api/v1")   # Lista filtrada de usuarios
+app.include_router(usuario_router, prefix="/api/v1")
 
 # === ENDPOINTS PRINCIPALES ===
 
